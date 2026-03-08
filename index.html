@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Habit Tracker</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family: "Segoe UI", sans-serif;
+}
+
+body{
+min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:linear-gradient(135deg,#c188ff,#0460ff);
+transition:0.3s;
+}
+
+.container{
+width:400px;
+background:white;
+padding:30px;
+border-radius:15px;
+box-shadow:0 10px 25px rgba(0,0,0,0.2);
+}
+
+h1{
+text-align:center;
+margin-bottom:20px;
+}
+
+.add-habit{
+display:flex;
+gap:10px;
+margin-bottom:20px;
+}
+
+.add-habit input{
+flex:1;
+padding:10px;
+border-radius:8px;
+border:1px solid #ccc;
+}
+
+.add-habit button{
+padding:10px 15px;
+border:none;
+background:#2575fc;
+color:white;
+border-radius:8px;
+cursor:pointer;
+}
+
+.add-habit button:hover{
+background:#1b5ed8;
+}
+
+ul{
+list-style:none;
+}
+
+li{
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:10px;
+margin-bottom:10px;
+border-radius:8px;
+background:#f4f4f4;
+transition:0.3s;
+}
+
+li.completed{
+text-decoration:line-through;
+background:#d4edda;
+}
+
+.delete{
+background:red;
+color:white;
+border:none;
+padding:5px 10px;
+border-radius:5px;
+cursor:pointer;
+}
+
+.progress-container{
+margin-top:20px;
+}
+
+.progress-bar{
+height:12px;
+background:#ddd;
+border-radius:20px;
+overflow:hidden;
+}
+
+.progress{
+height:100%;
+width:0%;
+background:linear-gradient(90deg,#00c6ff,#0072ff);
+transition:0.4s;
+}
+
+.progress-text{
+margin-top:5px;
+font-size:14px;
+text-align:center;
+}
+
+.controls{
+display:flex;
+justify-content:space-between;
+margin-top:20px;
+}
+
+button.control{
+padding:8px 12px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+background:#444;
+color:white;
+}
+
+.dark{
+background:#121212;
+}
+
+.dark .container{
+background:#1e1e1e;
+color:white;
+}
+
+.dark li{
+background:#333;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Habit Tracker</h1>
+
+<div class="add-habit">
+<input type="text" id="habitInput" placeholder="Add new habit">
+<button onclick="addHabit()">Add</button>
+</div>
+
+<ul id="habitList"></ul>
+
+<div class="progress-container">
+<div class="progress-bar">
+<div class="progress" id="progress"></div>
+</div>
+<div class="progress-text" id="progressText">0% Completed</div>
+</div>
+
+<div class="controls">
+<button class="control" onclick="resetHabits()">Reset</button>
+<button class="control" onclick="toggleDark()">Dark Mode</button>
+</div>
+
+</div>
+
+<script>
+
+let habits = JSON.parse(localStorage.getItem("habits")) || [];
+
+const list = document.getElementById("habitList");
+
+function saveHabits(){
+localStorage.setItem("habits",JSON.stringify(habits));
+}
+
+function renderHabits(){
+
+list.innerHTML="";
+
+habits.forEach((habit,index)=>{
+
+let li = document.createElement("li");
+
+if(habit.done){
+li.classList.add("completed");
+}
+
+li.innerHTML = `
+<div>
+<input type="checkbox" ${habit.done ? "checked" : ""} onchange="toggleHabit(${index})">
+${habit.name}
+</div>
+<button class="delete" onclick="deleteHabit(${index})">X</button>
+`;
+
+list.appendChild(li);
+
+});
+
+updateProgress();
+}
+
+function addHabit(){
+
+const input = document.getElementById("habitInput");
+
+if(input.value.trim() === "") return;
+
+habits.push({
+name:input.value,
+done:false
+});
+
+input.value="";
+
+saveHabits();
+renderHabits();
+}
+
+function toggleHabit(index){
+
+habits[index].done = !habits[index].done;
+
+saveHabits();
+renderHabits();
+}
+
+function deleteHabit(index){
+
+habits.splice(index,1);
+
+saveHabits();
+renderHabits();
+}
+
+function updateProgress(){
+
+let total = habits.length;
+
+let completed = habits.filter(h => h.done).length;
+
+let percent = total === 0 ? 0 : Math.round((completed/total)*100);
+
+document.getElementById("progress").style.width = percent + "%";
+
+document.getElementById("progressText").innerText = percent + "% Completed";
+
+}
+
+function resetHabits(){
+
+habits.forEach(h => h.done = false);
+
+saveHabits();
+renderHabits();
+
+}
+
+function toggleDark(){
+
+document.body.classList.toggle("dark");
+
+}
+
+renderHabits();
+
+</script>
+
+</body>
+</html>
